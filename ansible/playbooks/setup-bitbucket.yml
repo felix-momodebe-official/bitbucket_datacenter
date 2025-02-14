@@ -31,6 +31,16 @@
         groups: docker
         append: yes
 
+    - name: Restart Docker service to ensure permissions are applied
+      systemd:
+        name: docker
+        state: restarted
+
+    # - name: Ensure user has correct permissions to access Docker
+    #   shell: |
+    #     newgrp docker
+    #   become: yes
+
     - name: Create Docker config directory
       file:
         path: /usr/local/lib/docker/cli-plugins
