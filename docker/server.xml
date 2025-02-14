@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Server port="8000" shutdown="SHUTDOWN">
+    <Service name="Catalina">
+        <Connector port="7990"
+                   maxThreads="150"
+                   minSpareThreads="25"
+                   connectionTimeout="20000"
+                   enableLookups="false"
+                   protocol="HTTP/1.1"
+                   acceptCount="100"
+                   secure="false"
+                   scheme="http"
+                   proxyName="${SERVER_PROXY_NAME}"
+                   proxyPort="7990"/>
+
+        <Engine name="Catalina" defaultHost="localhost">
+            <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+                <Context path="" docBase="${catalina.home}/atlassian-bitbucket" reloadable="false" useHttpOnly="true">
+                    <Manager pathname=""/>
+                </Context>
+            </Host>
+        </Engine>
+    </Service>
+</Server>

@@ -1,0 +1,115 @@
+---
+- name: Setup Bitbucket Data Center
+  hosts: bitbucket_nodes
+  become: yes
+  tasks:
+    - name: Update all packages
+      yum:
+        name: '*'
+        state: latest
+        update_only: yes
+
+    - name: Install required packages
+      yum:
+        name:
+          - docker
+          - python3-pip
+          - git
+          - nfs-utils
+          - wget
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Create Docker config directory
+      file:
+        path: /usr/local/lib/docker/cli-plugins
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker Compose plugin
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.1/docker-compose-linux-x86_64
+        dest: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: '0755'
+
+    - name: Create symlink for Docker Compose
+      file:
+        src: /usr/local/lib/docker/cli-plugins/docker-compose
+        dest: /usr/bin/docker-compose
+        state: link
+
+    - name: Create Bitbucket directories with proper permissions
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0777'  # Temporarily set wide permissions
+        owner: 2001   # Bitbucket Docker container user
+        group: 2001
+      with_items:
+        - /opt/bitbucket
+        - /opt/bitbucket/data
+        - /opt/bitbucket/shared
+        - /opt/bitbucket/shared/config
+        - /opt/bitbucket/shared/search
+        - /opt/bitbucket/shared/search/config
+        - /opt/bitbucket/elasticsearch
+
+    - name: Stop existing containers if running
+      become_user: ec2-user
+      shell: |
+        cd /opt/bitbucket
+        docker-compose down
+      ignore_errors: yes
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: ../../docker/docker-compose.yml
+        dest: /opt/bitbucket/docker-compose.yml
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+
+    - name: Copy environment file
+      copy:
+        src: ../../docker/.env
+        dest: /opt/bitbucket/.env
+        owner: ec2-user
+        group: ec2-user
+        mode: '0600'
+
+    - name: Copy bitbucket.properties file
+      copy:
+        src: ../../docker/bitbucket.properties
+        dest: /opt/bitbucket/shared/bitbucket.properties
+        owner: 2001
+        group: 2001
+        mode: '0644'
+
+    - name: Start Bitbucket containers
+      become_user: ec2-user
+      shell: |
+        cd /opt/bitbucket
+        docker-compose up -d
+
+    - name: Wait for containers to start
+      pause:
+        seconds: 10
+
+    - name: Verify container status
+      shell: docker ps
+      register: container_status
+
+    - name: Display container status
+      debug:
+        var: container_status.stdout_lines

@@ -1,0 +1,8 @@
+[bitbucket_nodes]
+3.92.202.32
+
+[bitbucket_nodes:vars]
+ansible_user=ec2-user
+ansible_ssh_private_key_file=~/.ssh/my_default_keypair.pem
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+efs_dns_name=fs-0cbe617eb55280cee.efs.us-east-1.amazonaws.com
