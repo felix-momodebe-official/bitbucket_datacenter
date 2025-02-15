@@ -13,6 +13,11 @@ This repository contains the necessary configuration files to deploy Bitbucket D
 - Security Groups
 - IAM roles and policies
 
+## Architectural Visualization:
+
+![image](https://github.com/user-attachments/assets/c003a4cd-3020-4bea-9165-1b23330ac2f0)
+
+
 ## Component Clarification:
 
 EFS (Elastic File System):
