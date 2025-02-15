@@ -1,5 +1,5 @@
 [bitbucket_nodes]
-52.90.91.204
+44.201.135.253
 
 [bitbucket_nodes:vars]
 ansible_user=ec2-user
